@@ -1,0 +1,245 @@
+<!--
+   Copyright 2018 Google LLC.
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+
+  <fragment
+      android:id="@+id/ux_fragment"
+      android:name="com.google.ar.sceneform.ux.ArFragment"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="1.0"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:layout_constraintVertical_bias="1.0" />
+
+
+
+  <Button
+      android:id="@+id/btnUp"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="240dp"
+      android:layout_marginTop="590dp"
+      android:onClick="btnUp"
+      android:text="Up"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnRotateLeft"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="144dp"
+      android:layout_marginTop="504dp"
+      android:onClick="btnRotateLeft"
+      android:text="Rotate Left"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnRotateRight"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="144dp"
+      android:layout_marginTop="552dp"
+      android:onClick="btnRotateRight"
+      android:text="Rotate Right"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnRotateUp"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:layout_marginTop="504dp"
+      android:onClick="btnRotateUp"
+      android:text="Rotate Up"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnRotateDown"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:layout_marginTop="552dp"
+      android:onClick="btnRotateDown"
+      android:text="Rotate Down"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnDown"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="240dp"
+      android:layout_marginTop="674dp"
+      android:onClick="btnDown"
+      android:text="Down"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnLeft"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="320dp"
+      android:layout_marginTop="632dp"
+      android:onClick="btnLeft"
+      android:text="Left"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnRight"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="160dp"
+      android:layout_marginTop="632dp"
+      android:onClick="btnRight"
+      android:text="Right"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnForward"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="632dp"
+      android:onClick="btnForward"
+      android:text="Forward"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnBackward"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="11dp"
+      android:layout_marginTop="672dp"
+      android:onClick="btnBackward"
+      android:text="Backward"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+
+  <Button
+      android:id="@+id/btnEditSet"
+      android:layout_width="91dp"
+      android:layout_height="50dp"
+      android:layout_marginStart="624dp"
+      android:layout_marginTop="8dp"
+      android:onClick="btnStartInstructionSet"
+      android:text="Edit Set"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/Save"
+      android:layout_width="116dp"
+      android:layout_height="51dp"
+      android:layout_marginStart="548dp"
+      android:layout_marginTop="352dp"
+      android:onClick="btnSave"
+      android:text="Save"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnAddObject"
+      android:layout_width="110dp"
+      android:layout_height="50dp"
+      android:layout_marginStart="516dp"
+      android:layout_marginTop="8dp"
+      android:onClick="btnAddObject"
+      android:text="Add Object"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnNextStep"
+      android:layout_width="65dp"
+      android:layout_height="36dp"
+      android:layout_marginTop="14dp"
+      android:layout_marginEnd="230dp"
+      android:background="#fffbf0"
+      android:text=">"
+      android:textColor="#030303"
+      android:textSize="25sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnPreviousStep"
+      android:layout_width="65dp"
+      android:layout_height="36dp"
+      android:layout_marginTop="14dp"
+      android:layout_marginEnd="68dp"
+      android:background="#fffbf0"
+      android:textColor="#030303"
+      android:textSize="25sp"
+      app:layout_constraintEnd_toStartOf="@+id/btnNextStep"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <android.support.v7.widget.RecyclerView
+      android:id="@+id/rvObjects"
+      android:layout_width="187dp"
+      android:layout_height="195dp"
+      android:layout_marginStart="476dp"
+      android:layout_marginTop="60dp"
+      android:background="#fffbf0"
+      android:translationZ="100dp"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <android.support.v7.widget.AppCompatSpinner
+      android:id="@+id/spinnerChooseInstructionSet"
+      android:layout_width="286dp"
+      android:layout_height="40dp"
+      android:layout_marginTop="12dp"
+      android:spinnerMode="dialog"
+      android:textColor="#030303"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.024"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <TextView
+      android:id="@+id/textInformationView"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="92dp"
+      android:text="Information View"
+      android:textSize="24dp"
+
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHorizontal_bias="0.185"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="@+id/ux_fragment" />
+
+</android.support.constraint.ConstraintLayout>
+

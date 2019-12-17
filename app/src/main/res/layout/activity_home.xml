@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HomeActivity">
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="260dp"
+        android:layout_height="59dp"
+        android:layout_marginTop="52dp"
+        android:gravity="center"
+        android:text="Please select if you would like to use an instruction set or create one "
+        android:textSize="17sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnUser"
+        android:layout_width="206dp"
+        android:layout_height="517dp"
+        android:layout_marginTop="68dp"
+        android:onClick="openHelloScene"
+        android:text="User"
+        app:layout_constraintEnd_toStartOf="@+id/btnCreator"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
+
+    <Button
+        android:id="@+id/btnCreator"
+        android:layout_width="206dp"
+        android:layout_height="517dp"
+        android:onClick="openHelloScene"
+        android:text="Creator"
+        app:layout_constraintBaseline_toBaselineOf="@+id/btnUser"
+        app:layout_constraintEnd_toEndOf="parent" />
+</android.support.constraint.ConstraintLayout>
