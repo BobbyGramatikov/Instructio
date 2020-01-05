@@ -15,4 +15,6 @@
 -->
 <resources>
   <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar"/>
+  <style name="AddInstructionsSetTheme" parent="Theme.AppCompat.Light.Dialog"/>
+
 </resources>

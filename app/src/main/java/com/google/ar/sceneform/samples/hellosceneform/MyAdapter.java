@@ -107,7 +107,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Object currentObject = mObjectList.get(position);
-        String s = "Type: " + currentObject.objectName + " ID: " + currentObject.objectID + " Current Step: " + currentObject.stepID ;
+        String s = "Type: " + currentObject.objectType.toString() + " ID: " + currentObject.objectID + " Current Step: " + currentObject.stepID ;
         holder.mTextView1.setText(s);
     }
 

@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -45,6 +46,8 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
+import com.google.ar.core.Pose;
+import com.google.ar.core.Session;
 import com.google.ar.core.Trackable;
 import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
@@ -56,6 +59,7 @@ import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import org.w3c.dom.Text;
@@ -66,6 +70,7 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
@@ -73,11 +78,8 @@ import java.util.List;
 public class HelloSceneformActivity extends AppCompatActivity {
 
   private static final String TAG = HelloSceneformActivity.class.getSimpleName();
-  private static final double MIN_OPENGL_VERSION = 3.0;
   private boolean checkUser = false;
 
-    private GestureDetector gestureDetector;
-    private ArSceneView arSceneView;
     private ArFragment arFragment;
 
     //region Renderable variables
@@ -91,9 +93,9 @@ public class HelloSceneformActivity extends AppCompatActivity {
     //region UI variables
     private Button btnSave;
     private Button btnSaveInstructionSet;
-    private EditText editText;
-
-
+    private Button btnLoadInstructionSet;
+    private Button btnAddLabel;
+    private Button btnStartInstructionSet;
     private Button btnNextStep;
     private Button btnPreviousStep;
     private Button btnEditSet;
@@ -108,42 +110,37 @@ public class HelloSceneformActivity extends AppCompatActivity {
     private Button btnRotateDown;
     private Button btnRotateLeft;
     private Button btnRotateRight;
-    private Spinner spinnerSelectInstructionSet;
-
+    private EditText editText;
     private RecyclerView rvObjects;
-    private MyAdapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
+    private Spinner spinnerSelectInstructionSet;
+    private MyAdapter mAdapter;
 
     private Text textInformationView;
-   // private RecyclerView
 
   //endregion
 
+    //region variables
+
+    public ObjectBlueprint.objectType objectType;
+    public ArrayList<ObjectBlueprint> blueprintObjects = new ArrayList<ObjectBlueprint>();
+
+    public String currentInstructionSet;
+
     private int objectID = 1;
     private int currentSelectedObjectID = 0;
-    public int currentStep = 0;
-
     private boolean hasFinishedLoading = false;
-
-    public int hasMainAnchorBeenPlaced = 0;
-
     private boolean hasPlacedMainObject = false;
 
+    public int currentStep = 0;
 
-    public ArrayList<Object> ObjectsWithNoNodes = new ArrayList<Object>();
+    public int hasMainAnchorBeenPlaced = 0;
+    public ArrayList<Object> ObjectsWithNoNodesAndNoRednderables = new ArrayList<Object>();
     public Node mainNodeVisual;
-
-
     public TransformableNode mainTransformableNode;
-
-
     public Vector3 v = new Vector3(0f,5f,0f);
-
     public ArrayList<TransformableNode> transformableNodes = new ArrayList<TransformableNode>();
-
-    public ArrayList<Object> objects = new ArrayList<Object>();
-
-
+    public ArrayList<Object> objects  = new ArrayList<Object>();
     public enum Position{
         UP,
         DOWN,
@@ -152,10 +149,12 @@ public class HelloSceneformActivity extends AppCompatActivity {
         FORWARD,
         BACKWARD
     }
+    //endregion
 
     //---------------------------------------------------------------------------------------------------------------------------------
 
     //region methods
+
     public void changeObjectPosition(Position position,int objectID){
 
  switch(position){
@@ -238,20 +237,43 @@ public class HelloSceneformActivity extends AppCompatActivity {
                 }
             }
         });
-
-
-
-
-
     }
 
+    private Node createObject(
+            Object object,
+            Node parent
+    ) {
+        // Orbit is a rotating node with no renderable positioned at the sun.
+        // The planet is positioned relative to the orbit so that it appears to rotate around the sun.
+        // This is done instead of making the sun rotate so each planet can orbit at its own speed.
+        /*RotatingNode orbit = new RotatingNode(solarSettings, true, false, 0);
+        orbit.setDegreesPerSecond(orbitDegreesPerSecond);
+        orbit.setParent(parent);*/
 
+        // Create the planet and position it relative to the sun.
 
+        object.setParent(parent);
 
+        Vector3 localPositionn = new Vector3(object.getPositionX(),object.getPositionY(),object.getPositionZ());
+
+        object.setLocalPosition(new Vector3(localPositionn));
+
+        //object.removeChild();
+        //maybe set the local positioninside the object object.setLocalPosition(v);
+
+        //sunVisual.setOnTapListener(
+        //        (hitTestResult, motionEvent) -> solarControls.setEnabled(!solarControls.isEnabled()));
+        return object;
+    }
 
     //endregion
 
     //---------------------------------------------------------------------------------------------------------------------------------
+
+    //---------------------------------------------------------------------------------------------------------------------------------
+
+    //region Saving & loading from memory
+
 
     public static final String SHARED_PREFS = "sharedPrefs";
 
@@ -285,72 +307,60 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
         }
     }
-    public void saveObjects() {
+
+
+    public void  saveObjectBluePrints() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         //PRIVATE MEANS NO ONE CAN CHANGE THE SHARED PREFERENCES
 
         Gson gson = new Gson();
-        List<Object> objectsForSaving = ObjectsWithNoNodes;
-        String json = gson.toJson(objectsForSaving);
-        Log.d(TAG, "saveObjects: " + json);
+        blueprintObjects = new ArrayList<ObjectBlueprint>();
+
+        try {
+
+            for (Object o : objects) {
+                blueprintObjects.add(o.getObjectBlueprint());
+            }
+
+            String json = gson.toJson(blueprintObjects);
+
+        Log.d(TAG, "saveObjectBluePrints: " + json);
+
         editor.putString(currentInstructionSet, json);
 
         editor.apply();
 
         Toast.makeText(this, "Objects saved", Toast.LENGTH_SHORT).show();
 
+        }
+        catch (Exception e){
+
+            Toast.makeText(this, "Error occurred " + e.toString(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
 
-    public void loadObjects() {
+    public void loadObjectBlueprints() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         //PRIVATE MEANS NO ONE CAN CHANGE THE SHARED PREFERENCES
         Gson gson = new Gson();
         String json = sharedPreferences.getString(currentInstructionSet, null);
         Type type = new TypeToken<ArrayList<Object>>(){}.getType();
         objects = gson.fromJson(json,type);
-
         if(objects == null){
             objects = new ArrayList<>();
+            ObjectBlueprint objectBlueprint = new ObjectBlueprint(objectType.Arrow,1,1,0,0,0,0,0,true);
+           // Object object = new Object();
+            blueprintObjects.add(objectBlueprint);
         }
     }
 
-    private void onSingleTap(MotionEvent tap) {
-        if (!hasFinishedLoading) {
-            // We can't do anything yet.
-            return;
-        }
+    //endregion
 
-        Frame frame = arSceneView.getArFrame();
-        if (frame != null) {
-            if (!hasPlacedMainObject && tryPlaceMainObject(tap, frame)) {
-                hasPlacedMainObject = true;
-            }
-        }
+    //---------------------------------------------------------------------------------------------------------------------------------
 
-        // Create file output stream
-
-    }
-
-    private boolean tryPlaceMainObject(MotionEvent tap, Frame frame) {
-        if (tap != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING) {
-            for (HitResult hit : frame.hitTest(tap)) {
-                Trackable trackable = hit.getTrackable();
-                if (trackable instanceof Plane && ((Plane) trackable).isPoseInPolygon(hit.getHitPose())) {
-                    // Create the Anchor.
-                    Anchor anchor = hit.createAnchor();
-                    AnchorNode anchorNode = new AnchorNode(anchor);
-                    anchorNode.setParent(arSceneView.getScene());
-                    Node objectSystem = createObjectSystem();
-                    anchorNode.addChild(objectSystem);
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
 
     private Node createObjectSystem() {
         Node base = new Node();
@@ -363,45 +373,11 @@ public class HelloSceneformActivity extends AppCompatActivity {
         lineVisual.setRenderable(arrowRenderable);
         lineVisual.setLocalScale(new Vector3(0.5f, 0.5f, 0.5f));
 
-
         // createObject("Line", sun, 0.7f, 35f, venusRenderable, 0.0475f, 2.64f);
 
         // Node earth = createObject("Earth", sun, 1.0f, 29f,  0.05f, 23.4f);
 
         return base;
-    }
-
-
-    public String currentInstructionSet;
-    //fileOutPutStream creates a file in the the device's "internal" storage
-
-
-
-    private Node createObject(
-            Object object,
-            Node parent
-           ) {
-        // Orbit is a rotating node with no renderable positioned at the sun.
-        // The planet is positioned relative to the orbit so that it appears to rotate around the sun.
-        // This is done instead of making the sun rotate so each planet can orbit at its own speed.
-        /*RotatingNode orbit = new RotatingNode(solarSettings, true, false, 0);
-        orbit.setDegreesPerSecond(orbitDegreesPerSecond);
-        orbit.setParent(parent);*/
-
-        // Create the planet and position it relative to the sun.
-
-         object.setParent(parent);
-
-         Vector3 localPositionn = new Vector3(object.getPositionX(),object.getPositionY(),object.getPositionZ());
-
-         object.setLocalPosition(new Vector3(localPositionn));
-
-        //object.removeChild();
-        //maybe set the local positioninside the object object.setLocalPosition(v);
-
-        //sunVisual.setOnTapListener(
-        //        (hitTestResult, motionEvent) -> solarControls.setEnabled(!solarControls.isEnabled()));
-        return object;
     }
 
     //---------------------------------------------------------------------------------------------------------------------------------
@@ -416,6 +392,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
         btnBackward.setVisibility(View.VISIBLE);
         btnNextStep.setVisibility(View.INVISIBLE);
         btnPreviousStep.setVisibility(View.INVISIBLE);
+        btnSave.setVisibility(View.INVISIBLE);
     }
     public void hidePositionControls(){
         btnUp.setVisibility(View.INVISIBLE);
@@ -461,7 +438,25 @@ public class HelloSceneformActivity extends AppCompatActivity {
       setContentView(R.layout.activity_ux);
 
       Intent intent = getIntent();
-      this.checkUser = intent.getBooleanExtra("HomeActivity", false);
+      //check if user or creator
+
+        String textBlueprintObjects = getIntent().getStringExtra("blueprintObjects");
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<ObjectBlueprint>>(){}.getType();
+        blueprintObjects = gson.fromJson(textBlueprintObjects, type);
+        currentInstructionSet = getIntent().getExtras().getString("currentInstructionSet");
+
+
+        //  for (ObjectBlueprint objectBlueprint : blueprintObjects){
+       //     Log.i("ObjectBPData" , "" +  objectBlueprint.objectID);
+       // }
+
+       // ArrayList<Car> cars = new ArrayList<>();
+      //  for (Parcelable o  : intent.getParcelableArrayListExtra("objects")) {
+      //      cars.add((Car) o);
+
+// Toast.makeText(this, intent.getStringExtra("objects"), Toast.LENGTH_LONG).show();
+      this.checkUser = intent.getBooleanExtra("checkUser", false);
       this.disableButtons();
 
       arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
@@ -502,25 +497,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       });
 
       // Set up a tap gesture detector.
-      gestureDetector =
-              new GestureDetector(
-                      this,
-                      new GestureDetector.SimpleOnGestureListener() {
-                          @Override
-                          public boolean onSingleTapUp(MotionEvent e) {
-                              onSingleTap(e);
-                              return true;
-                          }
-
-                          @Override
-                          public boolean onDown(MotionEvent e) {
-                              return true;
-                          }
-                      });
-
-      if (!checkIsSupportedDeviceOrFinish(this)) {
-          return;
-      }
 
       // Session mSession = null;
 
@@ -530,7 +506,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
               (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
                   if (lineRenderable == null || arrowRenderable == null) {
                       return;
-                  }else if (hasMainAnchorBeenPlaced == 0 && spinnerSelectInstructionSet.getSelectedItem() != "Create New InstructionSet"){
+                  }else if (hasMainAnchorBeenPlaced == 0){
                   // Pose mCameraRelativePose= Pose.makeTranslation(0.0f, 0.0f, -0.5f);
 
                   // mSession.createAnchor(mCameraRelativePose);
@@ -544,7 +520,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   AnchorNode anchorNode = new AnchorNode(anchor);
                   anchorNode.setParent(arFragment.getArSceneView().getScene());
                   //    TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
-
 
                        // createObjectSystem();
 
@@ -617,8 +592,10 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       // mainTransformableNode.setLocalPosition(v);
                       hasMainAnchorBeenPlaced++;
 
+                      btnStartInstructionSet.setVisibility(View.VISIBLE);
                       btnNextStep.setVisibility(View.VISIBLE);
                       btnPreviousStep.setVisibility(View.VISIBLE);
+                      btnSave.setVisibility(View.VISIBLE);
                   }
 
                      // createObject("arrow",mainTransformableNode)
@@ -669,8 +646,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
       //region Button Methods
 
-      //rvObjects = findViewById(R.id.rvObjects);
-
       // use this setting to improve performance if you know that changes
       // in content do not change the layout size of the RecyclerView
 
@@ -678,87 +653,107 @@ public class HelloSceneformActivity extends AppCompatActivity {
       layoutManager = new LinearLayoutManager(this);
 
 
-
-      this.spinnerSelectInstructionSet = findViewById(R.id.spinnerChooseInstructionSet);
       loadInstructionSets();
-      ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item
-              ,instructionSets);
+
+      //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,instructionSets);
+      //adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
+      //this.spinnerSelectInstructionSet = findViewById(R.id.spinnerChooseInstructionSet);
+      //this.spinnerSelectInstructionSet.setAdapter(adapter);
+      //this.spinnerSelectInstructionSet.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+      //       @Override
+      //       public void onItemSelected(AdapterView parent, View view, int position, long id) {
+      //
+      //          currentInstructionSet =  parent.getItemAtPosition(position).toString();
+      //         loadObjectBlueprints();
+      //        hideSavingInstructionSetControls();
+      //
+      //        if (currentInstructionSet == "Create New InstructionSet");{
+      //            showSavingInstructionSetControls();
+      //       }
+      //   }
+      //        @Override
+      //      public void onNothingSelected(AdapterView<?> parent) {
+      //   }
+      // });
+
+        this.editText = findViewById(R.id.editText);
+        this.editText.setVisibility(View.INVISIBLE);
 
 
-      adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
-      spinnerSelectInstructionSet.setAdapter(adapter);
-
-        this.spinnerSelectInstructionSet.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        this.btnStartInstructionSet = findViewById(R.id.btnStartInstructionSet);
+        this.btnStartInstructionSet.setVisibility(View.INVISIBLE);
+        this.btnStartInstructionSet.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onItemSelected(AdapterView parent, View view, int position, long id) {
-
-                currentInstructionSet =  parent.getItemAtPosition(position).toString();
-               loadObjects();
-                hideSavingInstructionSetControls();
-
-                if (currentInstructionSet == "Create New InstructionSet");{
-                    showSavingInstructionSetControls();
+            public void onClick(View view) {
+                Object o;
+                for (ObjectBlueprint obj:blueprintObjects) {
+                    if (obj.objectType == objectType.Arrow) {
+                         o = new Object(arrowRenderable,obj);
+                    }else{
+                         o = new Object(lineRenderable,obj);
+                    }
+                    objects.add(o);
+                    createObject(o,mainTransformableNode);
                 }
-
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
             }
         });
 
-        this.editText = findViewById(R.id.editText);
+        this.btnAddLabel = findViewById(R.id.btnAddLabel);
+        this.btnAddLabel.setVisibility(View.INVISIBLE);
+        this.btnAddLabel.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view) {
+                editText.setVisibility(View.VISIBLE);
+            }
+        });
 
         this.btnSaveInstructionSet = findViewById(R.id.btnSaveInstructionSet);
-    //    this.btnSaveInstructionSet.setVisibility(View.INVISIBLE);
+        this.btnSaveInstructionSet.setVisibility(View.INVISIBLE);
         this.btnSaveInstructionSet.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 String newSet = (editText.getText().toString());
                 instructionSets.add(newSet);
                saveInstructionSet();
-
             }
         });
 
+
+
         this.btnSave = findViewById(R.id.btnSave);
-       // this.btnSave.setVisibility(View.INVISIBLE);
+        this.btnSave.setVisibility(View.INVISIBLE);
         this.btnSave.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                saveObjects();
+                saveObjectBluePrints();
             }
         });
 
 
         this.btnNextStep = findViewById(R.id.btnNextStep);
-      btnNextStep.setVisibility(View.INVISIBLE);
-      this.btnNextStep.setOnClickListener(new View.OnClickListener(){
+        this.btnNextStep.setVisibility(View.INVISIBLE);
+        this.btnNextStep.setOnClickListener(new View.OnClickListener(){
           @Override
-          public void onClick(View view) {
+            public void onClick(View view) {
 
               currentStep++;
 
+              // looks through the list of objects and returns all objects affiliated with the current step
+
               ArrayList<Object> currentObj = new ArrayList<Object>();
               for(Object object : objects) {
-
                   object.setEnabled(false);
                   if (object.stepID == currentStep) {
-                      Log.d("", "" + object.positionX);
-                      Log.d("", "" + object.positionZ);
-                      Log.d("", "" + object.positionY);
                       currentObj.add(object);
                       object.setEnabled(true);
                   }
-
               }
 
               mAdapter = new MyAdapter(currentObj, this);
               mAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {
                   @Override
                   public void onItemClick(int Position) {
-                      Log.d("asd","ItemClicked");
+                      Log.d("Item clicked","Does Nothing");
                   }
 
                   @Override
@@ -774,16 +769,13 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   }
               });
               rvObjects.setAdapter(mAdapter);
-
-
-
           }
       });
 
 
-      this.btnPreviousStep = findViewById(R.id.btnPreviousStep);
-      btnPreviousStep.setVisibility(View.INVISIBLE);
-      this.btnPreviousStep.setOnClickListener(new View.OnClickListener(){
+        this.btnPreviousStep = findViewById(R.id.btnPreviousStep);
+        this.btnPreviousStep.setVisibility(View.INVISIBLE);
+        this.btnPreviousStep.setOnClickListener(new View.OnClickListener(){
           @Override
           public void onClick(View view) {
 
@@ -799,6 +791,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       object.setEnabled(true);
                   }
               }
+
               mAdapter = new MyAdapter(currentObj,this);
               mAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {
                   @Override
@@ -820,23 +813,32 @@ public class HelloSceneformActivity extends AppCompatActivity {
               });
               rvObjects.setAdapter(mAdapter);
           }
-      });
+        });
 
-      this.btnAddObject = findViewById(R.id.btnAddObject);
-      this.btnAddObject.setVisibility(View.INVISIBLE);
-      this.btnAddObject.setOnClickListener(new View.OnClickListener() {
+
+        this.btnAddObject = findViewById(R.id.btnAddObject);
+        this.btnAddObject.setVisibility(View.INVISIBLE);
+        this.btnAddObject.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
-              Object o = new Object("arrow",1f,1f,arrowRenderable,currentStep,objectID,0.1f,0.1f,0.5f);
-             ObjectsWithNoNodes.add(o);
-              createObject(o,mainTransformableNode);
-             objects.add(o);
-              ArrayList<Object> currentObj = new ArrayList<Object>();
-              for(Object object : objects) {
 
+              ObjectBlueprint objectBluePrint = new ObjectBlueprint(objectType.Arrow,currentStep,objectID,0,0,0
+                      ,0,0,true);
+              Object o;
+              if(objectBluePrint.objectType == objectType.Arrow) {
+                   o = new Object(arrowRenderable, objectBluePrint);
+              }else {
+                   o = new Object(lineRenderable, objectBluePrint);
+              }
+              objects.add(o);
+
+              createObject(o,mainTransformableNode);
+
+              ArrayList<Object> currentObj = new ArrayList<Object>();
+
+              for(Object object : objects) {
                   object.setEnabled(false);
                   if (object.stepID == currentStep) {
-
                       currentObj.add(object);
                       object.setEnabled(true);
                   }
@@ -852,6 +854,13 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   public void onRotationClick(int Position) {
                       currentSelectedObjectID = currentObj.get(Position).objectID;
                       showRotationControls();
+                      //Session session = arFragment.getArSceneView().getSession();
+                      //float[] pos = { 0,0,-1 };
+                      //float[] rotation = {0,0,0,1};
+                      //Anchor anchor =  session.createAnchor(new Pose(pos, rotation));
+                      //Node anchorNode = new AnchorNode(anchor);
+                      //anchorNode.setRenderable(arrowRenderable);
+                      //anchorNode.setParent(arFragment.getArSceneView().getScene());
                   }
 
                   @Override
@@ -865,24 +874,27 @@ public class HelloSceneformActivity extends AppCompatActivity {
           }
       });
 
-      this.btnEditSet = findViewById(R.id.btnEditSet);
-      this.btnEditSet.setOnClickListener(new View.OnClickListener() {
+
+        this.btnEditSet = findViewById(R.id.btnEditSet);
+        this.btnEditSet.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
 
-              if (rvObjects.getVisibility() == view.INVISIBLE){
-                  rvObjects.setVisibility(view.VISIBLE);
-                  btnAddObject.setVisibility(view.VISIBLE);
+              if (rvObjects.getVisibility() == View.INVISIBLE){
+
                   rvObjects.setLayoutManager(layoutManager);
                   rvObjects.setHasFixedSize(false);
+                  rvObjects.setVisibility(View.VISIBLE);
+                  btnAddObject.setVisibility(View.VISIBLE);
+
                   btnNextStep.setVisibility(View.INVISIBLE);
                   btnPreviousStep.setVisibility(View.INVISIBLE);
+                  btnSave.setVisibility(View.INVISIBLE);
+
                   ArrayList<Object> currentObj = new ArrayList<Object>();
                   for(Object object : objects) {
-
                       object.setEnabled(false);
                       if (object.stepID == currentStep) {
-
                           currentObj.add(object);
                           object.setEnabled(true);
                       }
@@ -896,7 +908,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
                       @Override
                       public void onRotationClick(int Position) {
-
                           currentSelectedObjectID = currentObj.get(Position).objectID;
                           showRotationControls();
                       }
@@ -909,36 +920,33 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   });
                   btnEditSet.setText("Stop Editing Steps");
               }else{
-                  rvObjects.setVisibility(view.INVISIBLE);
-                  btnAddObject.setVisibility(view.INVISIBLE);
+                  rvObjects.setVisibility(View.INVISIBLE);
+                  btnAddObject.setVisibility(View.INVISIBLE);
                   hidePositionControls();
                   hideRotationControls();
                   btnEditSet.setText("Edit Steps");
                   btnNextStep.setVisibility(View.VISIBLE);
                   btnPreviousStep.setVisibility(View.VISIBLE);
+                  btnSave.setVisibility(View.VISIBLE);
               }
-
               rvObjects.setAdapter(mAdapter);
-
-          }
-
-      });
-      this.btnUp = findViewById(R.id.btnUp);
-      this.btnUp.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View view) {
-              for(Object object : objects) {
-                  if (object.objectID == currentSelectedObjectID){
-                      object.positionY += 0.05f;
-                      object.setLocalPosition(new Vector3(object.positionX,object.positionY, object.positionZ));
-                  }
-              }
           }
       });
 
-
-      this.btnDown = findViewById(R.id.btnDown);
-      this.btnDown.setOnClickListener(new View.OnClickListener() {
+        this.btnUp = findViewById(R.id.btnUp);
+        this.btnUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for(Object object : objects) {
+                    if (object.objectID == currentSelectedObjectID){
+                        object.positionY += 0.05f;
+                        object.setLocalPosition(new Vector3(object.positionX,object.positionY, object.positionZ));
+                    }
+                }
+            }
+        });
+        this.btnDown = findViewById(R.id.btnDown);
+        this.btnDown.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
@@ -949,8 +957,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnLeft = findViewById(R.id.btnLeft);
-      this.btnLeft.setOnClickListener(new View.OnClickListener() {
+        this.btnLeft = findViewById(R.id.btnLeft);
+        this.btnLeft.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
@@ -962,8 +970,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnRight = findViewById(R.id.btnRight);
-      this.btnRight.setOnClickListener(new View.OnClickListener() {
+        this.btnRight = findViewById(R.id.btnRight);
+        this.btnRight.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
 
@@ -976,8 +984,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnForward = findViewById(R.id.btnForward);
-      this.btnForward.setOnClickListener(new View.OnClickListener() {
+        this.btnForward = findViewById(R.id.btnForward);
+        this.btnForward.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
 
@@ -990,8 +998,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnBackward = findViewById(R.id.btnBackward);
-      this.btnBackward.setOnClickListener(new View.OnClickListener() {
+        this.btnBackward = findViewById(R.id.btnBackward);
+        this.btnBackward.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
 
@@ -1004,38 +1012,41 @@ public class HelloSceneformActivity extends AppCompatActivity {
           }
       });
 
-      this.btnRotateDown = findViewById(R.id.btnRotateDown);
-      this.btnRotateDown.setOnClickListener(new View.OnClickListener() {
+
+        this.btnRotateDown = findViewById(R.id.btnRotateDown);
+        this.btnRotateDown.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.rotaionX =1f;
-                      object.rotaionY =0f;
-                      object.rotaionZ =0f;
+                      //object.rotaionX =1f;
+                      //object.rotaionY =0f;
+                      //object.rotaionZ =0f;
+                      object.lastRotationX = true;
                       object.rotationalXAxis+=5;
                       //if (object.objectVisual.getLocalRotation() == null){
                       //    object.objectVisual.setLocalRotation(new Quaternion(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalXAxis));
                       //}else{
-                      object.objectVisual.setLocalRotation(new Quaternion(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalXAxis));
+                      object.objectVisual.setLocalRotation(new Quaternion(new Vector3(1 ,0, 0),object.rotationalXAxis));
 
                       //}
                   }
               }
           }
       });
-      this.btnRotateUp = findViewById(R.id.btnRotateUp);
-      this.btnRotateUp.setOnClickListener(new View.OnClickListener() {
+        this.btnRotateUp = findViewById(R.id.btnRotateUp);
+        this.btnRotateUp.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.rotaionX =1f;
-                      object.rotaionY =0f;
-                      object.rotaionZ =0f;
+                      //object.rotaionX =1f;
+                      //object.rotaionY =0f;
+                      //object.rotaionZ =0f;
+                      object.lastRotationX = true;
                       object.rotationalXAxis-=5;
                      // if (object.objectVisual.getLocalRotation() == null){
-                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalXAxis));
+                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(1 ,0, 0),object.rotationalXAxis));
                       //}else{
                        //   object.objectVisual.getLocalRotation().set(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalXAxis);
 
@@ -1044,18 +1055,19 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnRotateLeft = findViewById(R.id.btnRotateLeft);
-      this.btnRotateLeft.setOnClickListener(new View.OnClickListener() {
+        this.btnRotateLeft = findViewById(R.id.btnRotateLeft);
+        this.btnRotateLeft.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.rotaionX =0f;
-                      object.rotaionY =1f;
-                      object.rotaionZ =0f;
+                      //object.rotaionX =0f;
+                      //object.rotaionY =1f;
+                      //object.rotaionZ =0f;
+                      object.lastRotationX = false;
                       object.rotationalYAxis+=5;
                      // if (object.objectVisual.getLocalRotation() == null){
-                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalYAxis));
+                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(1 ,0, 0),object.rotationalYAxis));
                       //    object.getLocalRotation();
                      // }else{
                       //    object.objectVisual.getLocalRotation().set(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalYAxis);
@@ -1065,29 +1077,28 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
           }
       });
-      this.btnRotateRight = findViewById(R.id.btnRotateRight);
-      this.btnRotateRight.setOnClickListener(new View.OnClickListener() {
+        this.btnRotateRight = findViewById(R.id.btnRotateRight);
+        this.btnRotateRight.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.rotaionX =0f;
-                      object.rotaionY =1f;
-                      object.rotaionZ =0f;
+                      //object.rotaionX =0f;
+                      //object.rotaionY =1f;
+                      //object.rotaionZ =0f;
+                      object.lastRotationX = false;
                       object.rotationalYAxis-=5;
                       //if (object.objectVisual.getLocalRotation() == null){
                       //}else{
                       //    Quaternion current = object.getLocalRotation();
 
-                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(object.rotaionX ,object.rotaionY, object.rotaionZ),object.rotationalYAxis));
+                          object.objectVisual.setLocalRotation(new Quaternion(new Vector3(1 ,0, 0),object.rotationalYAxis));
 
                       //}
                   }
               }
           }
       });
-
-
 
       //endregion
 
@@ -1108,8 +1119,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
       Button btnRotateUp = findViewById(R.id.btnRotateUp);
       Button btnRotateRight = findViewById(R.id.btnRotateRight);
       Button btnRotateLeft = findViewById(R.id.btnRotateLeft);
-
-
 
       if (this.checkUser){
           btnRight.setVisibility(View.INVISIBLE);
@@ -1138,30 +1147,5 @@ public class HelloSceneformActivity extends AppCompatActivity {
           btnRotateRight.setVisibility(View.INVISIBLE);
           btnRotateUp.setVisibility(View.INVISIBLE);
       }
-  }
-
-  public static boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
-    if (Build.VERSION.SDK_INT < VERSION_CODES.N) {
-      Log.e(TAG, "Sceneform requires Android N or later");
-      Toast.makeText(activity, "Sceneform requires Android N or later", Toast.LENGTH_LONG).show();
-      activity.finish();
-      return false;
-    }
-    String openGlVersionString =
-        ((ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE))
-            .getDeviceConfigurationInfo()
-            .getGlEsVersion();
-    if (Double.parseDouble(openGlVersionString) < MIN_OPENGL_VERSION) {
-      Log.e(TAG, "Sceneform requires OpenGL ES 3.0 later");
-      Toast.makeText(activity, "Sceneform requires OpenGL ES 3.0 or later", Toast.LENGTH_LONG)
-          .show();
-      activity.finish();
-      return false;
-    }
-    return true;
-  }
-
-  public void showMessage(){
-        Toast.makeText(this, "test test", Toast.LENGTH_LONG).show();
   }
 }

@@ -14,13 +14,13 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public void openHelloScene(View view){
-        Intent intent = new Intent(this, HelloSceneformActivity.class);
+        Intent intent = new Intent(this, activity_instruction_set.class);
 
         if (view == findViewById(R.id.btnUser)){
-            intent.putExtra("HomeActivity", true);
+            intent.putExtra("checkUser", true);
         }
         else{
-            intent.putExtra("HomeActivity", false);
+            intent.putExtra("checkUser", false);
         }
         startActivity(intent);
     }

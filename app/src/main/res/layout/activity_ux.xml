@@ -148,20 +148,31 @@
       android:id="@+id/btnEditSet"
       android:layout_width="116dp"
       android:layout_height="52dp"
-      android:layout_marginTop="37dp"
+      android:layout_marginStart="292dp"
       android:onClick="btnStartInstructionSet"
       android:text="Edit Set"
-      app:layout_constraintStart_toEndOf="@+id/spinnerChooseInstructionSet"
+      app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
   <Button
       android:id="@+id/btnAddObject"
-      android:layout_width="173dp"
-      android:layout_height="42dp"
-      android:layout_marginStart="222dp"
-      android:layout_marginTop="302dp"
+      android:layout_width="109dp"
+      android:layout_height="56dp"
+      android:layout_marginStart="192dp"
+      android:layout_marginTop="248dp"
       android:onClick="btnStartInstructionSet"
       android:text="Add Object"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  <Button
+      android:id="@+id/btnAddLabel"
+      android:layout_width="109dp"
+      android:layout_height="56dp"
+      android:layout_marginStart="300dp"
+      android:layout_marginTop="248dp"
+      android:onClick="btnAddLabel"
+      android:text="Add step information"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -216,47 +227,49 @@
       app:layout_constraintEnd_toStartOf="@+id/btnNextStep"
       app:layout_constraintTop_toTopOf="parent" />
 
+  <Button
+      android:id="@+id/btnStartInstructionSet"
+      android:layout_width="185dp"
+      android:layout_height="48dp"
+      android:layout_marginTop="228dp"
+      android:layout_marginEnd="72dp"
+      android:background="#fffbf0"
+      android:onClick="btnStartInstructionSet"
+      android:text="Start Instruction Set"
+      android:textColor="#030303"
+      app:layout_constraintEnd_toStartOf="@+id/btnNextStep"
+      app:layout_constraintTop_toTopOf="parent" />
+
   <android.support.v7.widget.RecyclerView
       android:id="@+id/rvObjects"
-      android:layout_width="187dp"
-      android:layout_height="195dp"
-      android:layout_marginStart="217dp"
-      android:layout_marginTop="105dp"
+      android:layout_width="211dp"
+      android:layout_height="197dp"
+      android:layout_marginStart="196dp"
+      android:layout_marginTop="52dp"
       android:background="#fffbf0"
       android:translationZ="100dp"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-  <android.support.v7.widget.AppCompatSpinner
-      android:id="@+id/spinnerChooseInstructionSet"
-      android:layout_width="286dp"
-      android:layout_height="40dp"
-      android:layout_marginTop="4dp"
-      android:background="@android:color/white"
-      android:spinnerMode="dropdown"
-      android:textColor="#030303"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.05"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/textInformationView" />
-
   <TextView
       android:id="@+id/textInformationView"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="16dp"
+      android:layout_marginTop="452dp"
       android:text="Please select an Instruction Set"
       android:textSize="17sp"
 
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.571"
+      app:layout_constraintHorizontal_bias="0.511"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="@+id/ux_fragment" />
 
   <EditText
       android:id="@+id/editText"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
+      android:layout_width="280dp"
+      android:layout_height="45dp"
+      android:layout_marginStart="12dp"
+      android:layout_marginBottom="108dp"
       android:ems="10"
       android:inputType="textPersonName"
       android:text="Choose your instruction sets name and click save"

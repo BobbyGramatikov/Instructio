@@ -15,32 +15,34 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="false"
-
-
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".HomeActivity" android:label="Instructio"
+        <activity
+            android:name=".AddInstructionSetActivity"
+            android:theme="@style/AddInstructionsSetTheme">
+        </activity>
+        <activity
+            android:name=".activity_instruction_set"/>
+        <activity
+            android:name=".HomeActivity"
+            android:label="Instructio"
             tools:ignore="ExtraText">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <!-- This tag indicates that this application requires ARCore. This results in the -->
+        </activity> <!-- This tag indicates that this application requires ARCore. This results in the -->
         <!-- application only being visible in the Google Play Store on devices that support -->
         <!-- ARCore. -->
         <meta-data
             android:name="com.google.ar.core"
-            android:value="required">
-    </meta-data>
+            android:value="required" />
 
-    <activity
+        <activity
             android:name=".HelloSceneformActivity"
             android:configChanges="orientation|screenSize"
             android:exported="true"
-            android:screenOrientation="locked">
-        </activity>
-
-
+            android:screenOrientation="locked" />
     </application>
 
 </manifest>
