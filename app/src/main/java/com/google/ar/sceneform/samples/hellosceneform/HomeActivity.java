@@ -13,7 +13,7 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
     }
 
-    public void openHelloScene(View view){
+        public void openHelloScene(View view){
         Intent intent = new Intent(this, activity_instruction_set.class);
 
         if (view == findViewById(R.id.btnUser)){

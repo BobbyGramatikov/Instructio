@@ -1,6 +1,5 @@
 package com.google.ar.sceneform.samples.hellosceneform;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.tools.r8.code.I;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -27,7 +25,6 @@ public class AddInstructionSetActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_instruction_set);
         this.loadInstructionSets();
-       //instructionSets = getIntent().getExtras().getStringArrayList("instructionSets");
     }
 
     public void loadInstructionSets() {

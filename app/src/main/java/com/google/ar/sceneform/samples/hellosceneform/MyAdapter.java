@@ -14,7 +14,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
    private ArrayList<Object> mObjectList;
    private OnItemClickListener mListener;
-   private MyAdapter myAdapter;
 
    private View.OnClickListener hs;
 
@@ -77,17 +76,6 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
                     }
                 }
             });
-           /* mRotationImageView.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-            if (listener != null){
-            int position = getAdapterPosition();
-            if (position != RecyclerView.NO_POSITION){
-                listener.onDe
-                }
-            }
-                }
-            } */
         }
     }
 

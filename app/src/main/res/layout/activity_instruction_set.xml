@@ -33,7 +33,7 @@
         app:layout_constraintEnd_toStartOf="@+id/imageButtonAdd"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerChooseInstructionSet"></Button>
+        app:layout_constraintTop_toBottomOf="@+id/spinnerChooseInstructionSet" />
 
 
     <ImageButton

@@ -1,15 +1,8 @@
 package com.google.ar.sceneform.samples.hellosceneform;
 
-import android.view.MotionEvent;
-
-import com.google.ar.sceneform.FrameTime;
-import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ModelRenderable;
-import com.google.ar.sceneform.ux.ArFragment;
-
-import proguard.classfile.attribute.preverification.ObjectType;
 
 
 public class Object extends Node  {
@@ -62,10 +55,6 @@ public class Object extends Node  {
         return positionZ;
     }
 
-    public void DeleteRenderable(){
-        this.objectVisual = null;
-        this.objectRenderable = null;
-    }
 
     public ObjectBlueprint getObjectBlueprint(){
        ObjectBlueprint o = new ObjectBlueprint(this.objectType,this.stepID,this.objectID,this.positionX,
@@ -81,14 +70,10 @@ public class Object extends Node  {
         }
 
         if (objectVisual == null) {
-            // Put a rotator to counter the effects of orbit, and allow the planet orientation to remain
-            // of planets like Uranus (which has high tilt) to keep tilted towards the same direction
-            // wherever it is in its orbit.
             objectVisual = new Node();
             objectVisual.setParent(this);
             objectVisual.setRenderable(objectRenderable);
             objectVisual.setLocalScale(new Vector3(1, 1, 1));
-          //  objectVisual.setLocalRotation(Quaternion.axisAngle((new Vector3(1, 1, 1)), 0.7f));
         }
     }
 }

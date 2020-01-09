@@ -166,12 +166,12 @@
       app:layout_constraintTop_toTopOf="parent" />
 
   <Button
-      android:id="@+id/btnAddLabel"
+      android:id="@+id/btnAddStepInformation"
       android:layout_width="109dp"
       android:layout_height="56dp"
       android:layout_marginStart="300dp"
       android:layout_marginTop="248dp"
-      android:onClick="btnAddLabel"
+      android:onClick="btnAddStepInformation"
       android:text="Add step information"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
@@ -206,7 +206,7 @@
       android:layout_width="129dp"
       android:layout_height="48dp"
       android:layout_marginTop="664dp"
-      android:layout_marginEnd="128dp"
+      android:layout_marginEnd="129dp"
       android:background="#fffbf0"
       android:onClick="btnSave"
       android:text="Save"
@@ -215,29 +215,16 @@
       app:layout_constraintTop_toTopOf="parent" />
 
   <Button
-      android:id="@+id/btnSaveInstructionSet"
-      android:layout_width="185dp"
-      android:layout_height="48dp"
-      android:layout_marginTop="160dp"
-      android:layout_marginEnd="68dp"
-      android:background="#fffbf0"
-      android:onClick="btnSaveInstructionSet"
-      android:text="Save Instruction Set"
-      android:textColor="#030303"
-      app:layout_constraintEnd_toStartOf="@+id/btnNextStep"
-      app:layout_constraintTop_toTopOf="parent" />
-
-  <Button
       android:id="@+id/btnStartInstructionSet"
       android:layout_width="185dp"
       android:layout_height="48dp"
-      android:layout_marginTop="228dp"
-      android:layout_marginEnd="72dp"
+      android:layout_marginTop="664dp"
+      android:layout_marginEnd="16dp"
       android:background="#fffbf0"
       android:onClick="btnStartInstructionSet"
       android:text="Start Instruction Set"
       android:textColor="#030303"
-      app:layout_constraintEnd_toStartOf="@+id/btnNextStep"
+      app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
   <android.support.v7.widget.RecyclerView
@@ -253,14 +240,14 @@
 
   <TextView
       android:id="@+id/textInformationView"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="452dp"
-      android:text="Please select an Instruction Set"
-      android:textSize="17sp"
-
+      android:layout_width="396dp"
+      android:layout_height="50dp"
+      android:layout_marginTop="32dp"
+      android:gravity="center"
+      android:text="Scan for surface area, tap to place object and press start"
+      android:textSize="20sp"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintHorizontal_bias="0.511"
+      app:layout_constraintHorizontal_bias="0.533"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="@+id/ux_fragment" />
 
@@ -268,13 +255,13 @@
       android:id="@+id/editText"
       android:layout_width="280dp"
       android:layout_height="45dp"
-      android:layout_marginStart="12dp"
-      android:layout_marginBottom="108dp"
+      android:layout_marginStart="72dp"
+      android:layout_marginTop="316dp"
       android:ems="10"
       android:inputType="textPersonName"
-      android:text="Choose your instruction sets name and click save"
-      app:layout_constraintBottom_toTopOf="@+id/btnSaveInstructionSet"
-      app:layout_constraintStart_toStartOf="parent" />
+      android:text="Add your step information here."
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
 
 
 </android.support.constraint.ConstraintLayout>
