@@ -20,7 +20,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -45,12 +44,10 @@ import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * This is an example activity that uses the Sceneform UX package to make common AR tasks easier.
@@ -58,7 +55,6 @@ import java.util.List;
 public class HelloSceneformActivity extends AppCompatActivity {
 
     //region UI variables
-    private Button btnSave;
     private Button btnAddStepInformation;
     private Button btnStartInstructionSet;
     private Button btnNextStep;
@@ -75,6 +71,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
     private Button btnRotateDown;
     private Button btnRotateLeft;
     private Button btnRotateRight;
+    private Button btnSave;
     private EditText editText;
     private RecyclerView rvObjects;
     private RecyclerView.LayoutManager layoutManager;
@@ -84,32 +81,30 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
     //region variables
 
-    public ArrayList<ObjectBlueprint> blueprintObjects = new ArrayList<ObjectBlueprint>();
-    public ArrayList<Object> objects  = new ArrayList<Object>();
-    public List<String> instructionSets = new ArrayList<>();
-    public List<String> stepInformationList  = new ArrayList<>();
+    private ArrayList<ObjectBlueprint> blueprintObjects = new ArrayList<ObjectBlueprint>();
+    private ArrayList<Object> objects  = new ArrayList<Object>();
+    private List<String> instructionSets = new ArrayList<>();
+    private List<String> stepInformationList  = new ArrayList<>();
 
-    public ObjectBlueprint.objectType objectType;
+    private ObjectBlueprint.objectType objectType;
 
-    public String currentInstructionSet;
+    private String currentInstructionSet;
 
-    private int objectID = 1;
-    public int currentStep = 0;
+    private int objectID = 0;
+    private int currentStep = 0;
 
     private int currentSelectedObjectID = 0;
 
-    public int hasMainAnchorBeenPlaced = 0;
-    public Node mainNodeVisual;
-    public TransformableNode mainTransformableNode;
-    public Vector3 v = new Vector3(0f,5f,0f);
-
-
-    //endregion
+    private int hasMainAnchorBeenPlaced = 0;
+    private Node mainNodeVisual;
+    private TransformableNode mainTransformableNode;
+    private Vector3 v = new Vector3(0f,5f,0f);
 
     private static final String TAG = HelloSceneformActivity.class.getSimpleName();
     private boolean checkUser = false;
 
     private ArFragment arFragment;
+    //endregion
 
     //region Renderable variables
     private ModelRenderable lineRenderable;
@@ -121,8 +116,9 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
     //region methods
 
+    // Takes an object and sets its anchor point so that
 
-    private Node createObject(
+    public Node instantiateObject (
             Object object,
             Node parent) {
 
@@ -132,57 +128,24 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
         object.setLocalPosition(new Vector3(localPositionn));
 
-
         return object;
     }
 
     public void disableButtons(){
-        Button btnRight = findViewById(R.id.btnRight);
-        Button btnLeft = findViewById(R.id.btnLeft);
-        Button btnUp = findViewById(R.id.btnUp);
-        Button btnDown = findViewById(R.id.btnDown);
-        RecyclerView rvObjects = findViewById(R.id.rvObjects);
-        Button btnForward = findViewById(R.id.btnForward);
-        Button btnBackward = findViewById(R.id.btnBackward);
-        Button btnAddObject = findViewById(R.id.btnAddObject);
-        Button btnEditSet = findViewById(R.id.btnEditSet);
-        Button btnRotateDown = findViewById(R.id.btnRotateDown);
-        Button btnRotateUp = findViewById(R.id.btnRotateUp);
-        Button btnRotateRight = findViewById(R.id.btnRotateRight);
-        Button btnRotateLeft = findViewById(R.id.btnRotateLeft);
+
+         btnAddObject = findViewById(R.id.btnAddObject);
+         btnEditSet = findViewById(R.id.btnEditSet);
+         editText = findViewById(R.id.editText);
 
         if (this.checkUser){
-            btnRight.setVisibility(View.INVISIBLE);
-            btnLeft.setVisibility(View.INVISIBLE);
-            btnUp.setVisibility(View.INVISIBLE);
-            btnDown.setVisibility(View.INVISIBLE);
-            rvObjects.setVisibility(View.INVISIBLE);
-            btnForward.setVisibility(View.INVISIBLE);
-            btnBackward.setVisibility(View.INVISIBLE);
             btnAddObject.setVisibility(View.INVISIBLE);
             btnEditSet.setVisibility(View.INVISIBLE);
-            btnRotateDown.setVisibility(View.INVISIBLE);
-            btnRotateLeft.setVisibility(View.INVISIBLE);
-            btnRotateRight.setVisibility(View.INVISIBLE);
-            btnRotateUp.setVisibility(View.INVISIBLE);
-        }else{
-            rvObjects.setVisibility(View.INVISIBLE);
-            btnRight.setVisibility(View.INVISIBLE);
-            btnLeft.setVisibility(View.INVISIBLE);
-            btnUp.setVisibility(View.INVISIBLE);
-            btnDown.setVisibility(View.INVISIBLE);
-            btnForward.setVisibility(View.INVISIBLE);
-            btnBackward.setVisibility(View.INVISIBLE);
-            btnRotateDown.setVisibility(View.INVISIBLE);
-            btnRotateLeft.setVisibility(View.INVISIBLE);
-            btnRotateRight.setVisibility(View.INVISIBLE);
-            btnRotateUp.setVisibility(View.INVISIBLE);
+            editText = findViewById(View.INVISIBLE);
+
         }
     }
 
     //endregion
-
-    //---------------------------------------------------------------------------------------------------------------------------------
 
     //---------------------------------------------------------------------------------------------------------------------------------
 
@@ -191,20 +154,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
     public static final String SHARED_PREFS = "sharedPrefs";
 
-    public void saveInstructionSet() {
-            SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
-            //PRIVATE MEANS NO ONE CAN CHANGE THE SHARED PREFERENCES
-
-            Gson gson = new Gson();
-            String json = gson.toJson(instructionSets);
-
-            editor.putString("InstructionSets",json);
-            editor.apply();
-
-            Toast.makeText(this, "Instruction sets saved", Toast.LENGTH_SHORT).show();
-
-        }
+    //saves Text that is displayed for each step
 
     public void saveStepsInformation(){
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
@@ -226,15 +176,24 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
             editor.apply();
 
-            Toast.makeText(this, "Sets Info Saved ", Toast.LENGTH_SHORT).show();
+            Toast toast =
+            Toast.makeText(this, "Step information saved ", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.NO_GRAVITY, 10, 0);
+            toast.show();
 
         }
         catch (Exception e){
 
-            Toast.makeText(this, "Error occurred " + e.toString(), Toast.LENGTH_SHORT).show();
+            Toast toast =
+            Toast.makeText(this, "Error occurred ", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.NO_GRAVITY, 10, 0);
+            toast.show();
         }
 
     }
+
+    //loads Text that is displayed for each step
+
     public void loadStepsInformation(){
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         //PRIVATE MEANS NO ONE CAN CHANGE THE SHARED PREFERENCES
@@ -251,6 +210,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
         }
     }
 
+    //loads the names of each instruction set
+
     public void loadInstructionSets() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
         //PRIVATE MEANS NO ONE CAN CHANGE THE SHARED PREFERENCES
@@ -261,13 +222,12 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
         if(instructionSets == null){
             instructionSets = new ArrayList<>();
-            instructionSets.add("Create New InstructionSet");
+            instructionSets.add("Introduction Instruction Set");
 
         }
     }
 
-
-
+    //saves the blueprints of each object
 
     public void  saveObjectBluePrints() {
         SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS, MODE_PRIVATE);
@@ -291,12 +251,16 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
         editor.apply();
 
-        Toast.makeText(this, "Objects saved", Toast.LENGTH_SHORT).show();
+            Toast toast = Toast.makeText(this, "Everything saved !", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.NO_GRAVITY, 10, 0);
+            toast.show();
 
         }
         catch (Exception e){
 
-            Toast.makeText(this, "Error occurred " + e.toString(), Toast.LENGTH_SHORT).show();
+            Toast toast = Toast.makeText(this, "Error occurred " , Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.NO_GRAVITY, 10, 0);
+            toast.show();
         }
 
     }
@@ -305,9 +269,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
     //---------------------------------------------------------------------------------------------------------------------------------
 
-
-
-    //---------------------------------------------------------------------------------------------------------------------------------
     //region Position and Rotation Control visibility
 
     public void showPositionControls(){
@@ -343,37 +304,40 @@ public class HelloSceneformActivity extends AppCompatActivity {
         btnRotateDown.setVisibility(View.INVISIBLE);
     }
     //endregion
+
     //---------------------------------------------------------------------------------------------------------------------------------
 
 
     @SuppressLint("WrongViewCast")
     @Override
-
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
 
       setContentView(R.layout.activity_ux);
 
-
       Intent intent = getIntent();
-      //check if user or creator
 
-        String textBlueprintObjects = getIntent().getStringExtra("blueprintObjects");
+      String textBlueprintObjects = getIntent().getStringExtra("blueprintObjects");
+
         Gson gson = new Gson();
         Type type = new TypeToken<ArrayList<ObjectBlueprint>>(){}.getType();
         blueprintObjects = gson.fromJson(textBlueprintObjects, type);
-        currentInstructionSet = getIntent().getExtras().getString("currentInstructionSet");
+        currentInstructionSet = Objects.requireNonNull(getIntent().getExtras()).getString("currentInstructionSet");
 
-      this.checkUser = intent.getBooleanExtra("checkUser", false);
-      this.disableButtons();
+
       loadStepsInformation();
+
       arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
 
-      if (Build.VERSION.SDK_INT>= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+      if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
           requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1000);
       }
-      // When you build a Renderable, Sceneform loads its resources in the background while returning
-      // a CompletableFuture. Call thenAccept(), handle(), or check isDone() before calling get().
+
+        //---------------------------------------------------------------------------------------------------------------------------------
+
+        //region Build Model Renderables
+
+      // Creation of renderable 3D objects
 
       ModelRenderable.builder()
               .setSource(this, R.raw.line)
@@ -383,7 +347,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
               .exceptionally(
                       throwable -> {
                           Toast toast =
-                                  Toast.makeText(this, "Unable to load line renderable", Toast.LENGTH_LONG);
+                                  Toast.makeText(this, "Unable to load 3D line object ", Toast.LENGTH_LONG);
                           toast.setGravity(Gravity.NO_GRAVITY, 0, 0);
                           toast.show();
                           return null;
@@ -398,13 +362,13 @@ public class HelloSceneformActivity extends AppCompatActivity {
               .exceptionally(
                       throwable -> {
                           Toast toast =
-                                  Toast.makeText(this, "Unable to load arrow renderable", Toast.LENGTH_LONG);
+                                  Toast.makeText(this, "Unable to load 3D arrow object ", Toast.LENGTH_LONG);
                           toast.setGravity(Gravity.NO_GRAVITY, 0, 0);
                           toast.show();
                           return null;
                       });
 
-
+      //on tap of the plane we create the main object and set its renderable
       arFragment.setOnTapArPlaneListener(
               (HitResult hitResult, Plane plane, MotionEvent motionEvent) -> {
                   if (lineRenderable == null || arrowRenderable == null) {
@@ -421,7 +385,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
                       mainTransformableNode = transformableNode;
                       mainTransformableNode.setParent(base);
-                      mainTransformableNode.setLocalPosition(new Vector3(0.0f, 0.1f, 0.0f));
+                      mainTransformableNode.setLocalPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
 
                       mainNodeVisual = new Node();
@@ -432,17 +396,15 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       anchorNode.addChild(base);
 
                       hasMainAnchorBeenPlaced++;
-
-
                   }
               });
 
-      //---------------------------------------------------------------------------------------------------------------------------------
+      //endregion
 
-      //region Button Methods
+        //---------------------------------------------------------------------------------------------------------------------------------
 
-      // use this setting to improve performance if you know that changes
-      // in content do not change the layout size of the RecyclerView
+        //region Button Methods
+
 
       this.rvObjects = findViewById(R.id.rvObjects);
       layoutManager = new LinearLayoutManager(this);
@@ -461,34 +423,66 @@ public class HelloSceneformActivity extends AppCompatActivity {
         this.btnStartInstructionSet.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                Object o;
-                for(ObjectBlueprint obj:blueprintObjects) {
-                    if (obj.objectType == objectType.Arrow) {
-                         o = new Object(arrowRenderable,obj);
-                    }else{
-                         o = new Object(lineRenderable,obj);
+
+                if (hasMainAnchorBeenPlaced > 0) {
+                //Creates an object based off of each blueprint
+                    Object o;
+                    for(ObjectBlueprint obj:blueprintObjects) {
+                        if (obj.objectType == objectType.Arrow) {
+                            o = new Object(arrowRenderable,obj);
+                        }else{
+                            o = new Object(lineRenderable,obj);
+                        }
+
+                        objects.add(o);
+
+                        //object is instantiated
+                        instantiateObject(o,mainTransformableNode);
+
+
+                        //its position and id is set based on it's inner coordinates
+                        objectID = o.objectID;
+                        if(o.lastRotationX == true){
+                            o.objectVisual.setLocalRotation(new Quaternion(new Vector3(1 ,0, 0),obj.rotationalXAxis));
+                        }else {
+                            o.objectVisual.setLocalRotation(new Quaternion(new Vector3(0 ,1, 0),obj.rotationalYAxis));
+
+                        }
                     }
-                    objects.add(o);
-                    createObject(o,mainTransformableNode);
-                    objectID = o.objectID;
-                }
 
-                ArrayList<Object> currentObj = new ArrayList<Object>();
-                for(Object object : objects) {
+                    ArrayList<Object> currentObj = new ArrayList<Object>();
+                    for(Object object : objects) {
 
-                    object.setEnabled(false);
-                    if (object.stepID == currentStep) {
+                        object.setEnabled(false);
+                        if (object.stepID == currentStep) {
 
-                        currentObj.add(object);
-                        object.setEnabled(true);
+                            currentObj.add(object);
+                            object.setEnabled(true);
+                        }
                     }
-                }
 
+                    if(checkUser == true){
+                        btnNextStep.setVisibility(View.VISIBLE);
+                        btnPreviousStep.setVisibility(View.VISIBLE);
+                        btnStartInstructionSet.setVisibility(View.INVISIBLE);
+                        textInformationView.setText(stepInformationList.get(currentStep));
+
+                    }else {
+                        btnNextStep.setVisibility(View.VISIBLE);
+                        btnPreviousStep.setVisibility(View.VISIBLE);
+                        btnSave.setVisibility(View.VISIBLE);
+                        btnEditSet.setVisibility(View.VISIBLE);
+                        btnStartInstructionSet.setVisibility(View.INVISIBLE);
+                        textInformationView.setText(stepInformationList.get(currentStep));
+                    }
+
+
+                    //sets the objects inside the recycle view
                 mAdapter = new MyAdapter(currentObj,this);
                 mAdapter.setOnItemClickListener(new MyAdapter.OnItemClickListener() {
                     @Override
                     public void onItemClick(int Position) {
-                        Log.d("asd","itemClicked");
+                        Log.d("item","itemClicked");
                     }
 
                     @Override
@@ -504,22 +498,11 @@ public class HelloSceneformActivity extends AppCompatActivity {
                     }
                 });
                 rvObjects.setAdapter(mAdapter);
-
-                if (hasMainAnchorBeenPlaced > 0) {
-                    if(checkUser == true){
-                        btnNextStep.setVisibility(View.VISIBLE);
-                        btnPreviousStep.setVisibility(View.VISIBLE);
-                        btnStartInstructionSet.setVisibility(View.INVISIBLE);
-                        textInformationView.setText(stepInformationList.get(currentStep));
-
-                    }else {
-                        btnNextStep.setVisibility(View.VISIBLE);
-                        btnPreviousStep.setVisibility(View.VISIBLE);
-                        btnSave.setVisibility(View.VISIBLE);
-                        btnEditSet.setVisibility(View.VISIBLE);
-                        btnStartInstructionSet.setVisibility(View.INVISIBLE);
-                        textInformationView.setText(stepInformationList.get(currentStep));
-                    }
+                }else {
+                    Toast toast =
+                            Toast.makeText(view.getContext(), "Please place your starting object first ", Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.NO_GRAVITY, 0, 0);
+                    toast.show();
                 }
             }
         });
@@ -531,8 +514,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if(btnAddStepInformation.getText() == "Save step information"){
                     String content = editText.getText().toString(); //gets you the contents of edit text
-                    //textInformationView.setTextContent(content); //displays it in a textview..
-
+                    //textInformationView.setTextContent(content); //displays it in a textview.
                     stepInformationList.add(currentStep,content);
                     btnAddStepInformation.setText("Add step Information");
                     editText.setText("Add information for step " + currentStep);
@@ -547,15 +529,15 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
 
 
-
-
         this.btnSave = findViewById(R.id.btnSave);
         this.btnSave.setVisibility(View.INVISIBLE);
         this.btnSave.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
-                saveObjectBluePrints();
                 saveStepsInformation();
+                saveObjectBluePrints();
+
+
             }
         });
 
@@ -599,7 +581,11 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   }
               });
               rvObjects.setAdapter(mAdapter);
+
               textInformationView.setText(stepInformationList.get(currentStep));
+              if (textInformationView.getText() == ""){
+                  textInformationView.setVisibility(View.GONE);
+              }
 
           }
       });
@@ -610,6 +596,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
         this.btnPreviousStep.setOnClickListener(new View.OnClickListener(){
           @Override
           public void onClick(View view) {
+
+              if (currentStep >= 1){
 
               currentStep--;
 
@@ -645,9 +633,16 @@ public class HelloSceneformActivity extends AppCompatActivity {
               });
               rvObjects.setAdapter(mAdapter);
               textInformationView.setText(stepInformationList.get(currentStep));
-
+                  if (textInformationView.getText() == ""){
+                      textInformationView.setVisibility(View.GONE);
+                  }
+              }else
+              {
+                  Toast toast = Toast.makeText(view.getContext(), "You've reached the beginning of your instruction set ", Toast.LENGTH_SHORT);
+                  toast.setGravity(Gravity.NO_GRAVITY, 10, 0);
+                  toast.show();
+              }
           }
-
         });
 
 
@@ -656,6 +651,8 @@ public class HelloSceneformActivity extends AppCompatActivity {
         this.btnAddObject.setOnClickListener(new View.OnClickListener() {
           @Override
           public void onClick(View view) {
+
+              objectID++;
 
               ObjectBlueprint objectBluePrint = new ObjectBlueprint(objectType.Arrow,currentStep,objectID,0,0,0
                       ,0,0,true);
@@ -667,7 +664,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
               }
               objects.add(o);
 
-              createObject(o,mainTransformableNode);
+              instantiateObject(o,mainTransformableNode);
 
               ArrayList<Object> currentObj = new ArrayList<Object>();
 
@@ -698,7 +695,6 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   }
               });
               rvObjects.setAdapter(mAdapter);
-             objectID++;
           }
       });
 
@@ -718,10 +714,10 @@ public class HelloSceneformActivity extends AppCompatActivity {
                   rvObjects.setVisibility(View.VISIBLE);
                   btnAddObject.setVisibility(View.VISIBLE);
                   btnAddStepInformation.setVisibility(View.VISIBLE);
-
                   btnNextStep.setVisibility(View.INVISIBLE);
                   btnPreviousStep.setVisibility(View.INVISIBLE);
                   btnSave.setVisibility(View.INVISIBLE);
+                  editText.setVisibility(View.INVISIBLE);
 
                   ArrayList<Object> currentObj = new ArrayList<Object>();
                   for(Object object : objects) {
@@ -742,6 +738,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       public void onRotationClick(int Position) {
                           currentSelectedObjectID = currentObj.get(Position).objectID;
                           showRotationControls();
+
                       }
 
                       @Override
@@ -751,6 +748,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
                       }
                   });
                   btnEditSet.setText("Stop Editing Steps");
+
               }else{
                   rvObjects.setVisibility(View.INVISIBLE);
                   btnAddObject.setVisibility(View.INVISIBLE);
@@ -825,7 +823,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.positionZ += 0.05f;
+                      object.positionZ -= 0.05f;
                       object.setLocalPosition(new Vector3(object.positionX ,object.positionY, object.positionZ));
 
                   }
@@ -839,7 +837,7 @@ public class HelloSceneformActivity extends AppCompatActivity {
 
               for(Object object : objects) {
                   if (object.objectID == currentSelectedObjectID){
-                      object.positionZ -= 0.05f;
+                      object.positionZ += 0.05f;
                       object.setLocalPosition(new Vector3(object.positionX ,object.positionY, object.positionZ));
                   }
               }
@@ -900,9 +898,14 @@ public class HelloSceneformActivity extends AppCompatActivity {
           }
       });
 
+
+
       //endregion
 
-      //---------------------------------------------------------------------------------------------------------------------------------
+        //---------------------------------------------------------------------------------------------------------------------------------
+
+        checkUser = intent.getBooleanExtra("checkUser", false);
+        disableButtons();
   }
 
 

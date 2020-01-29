@@ -10,7 +10,6 @@ public class ObjectBlueprint {
 
     public  int stepID;
     public int objectID;
-    // public Vector3 localPosition;
 
     public float positionX;
     public float positionY;

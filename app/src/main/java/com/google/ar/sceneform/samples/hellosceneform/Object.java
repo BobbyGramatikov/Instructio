@@ -23,7 +23,7 @@ public class Object extends Node  {
     public float rotationalXAxis;
     public float rotationalYAxis;
 
-    public boolean lastRotationX;
+    public boolean lastRotationX = false;
 
     public ObjectBlueprint.objectType objectType;
 
@@ -42,6 +42,10 @@ public class Object extends Node  {
         this.positionY = objectBlueprint.positionY;
         this.positionZ = objectBlueprint.positionZ;
         this.objectID = objectBlueprint.objectID;
+        this.rotationalYAxis = objectBlueprint.rotationalYAxis;
+        this.rotationalXAxis = objectBlueprint.rotationalXAxis;
+        this.lastRotationX = objectBlueprint.lastRotationX;
+
     }
 
 

@@ -6,10 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +35,7 @@ public class AddInstructionSetActivity extends AppCompatActivity {
 
         if(instructionSets == null){
             instructionSets = new ArrayList<>();
-            instructionSets.add("Create New InstructionSet");
+            instructionSets.add("Introduction Instruction Set");
         }
     }
 
@@ -54,7 +52,7 @@ public class AddInstructionSetActivity extends AppCompatActivity {
         editor.putString("InstructionSets",json);
         editor.apply();
 
-        Toast.makeText(this, "Instruction sets saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "New instruction set added !", Toast.LENGTH_SHORT).show();
 
     }
 }

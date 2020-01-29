@@ -4,21 +4,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
-
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,7 +112,7 @@ public class activity_instruction_set extends AppCompatActivity {
 
         if(instructionSets == null){
             instructionSets = new ArrayList<>();
-            instructionSets.add("Create New InstructionSet");
+            instructionSets.add("Introduction Instruction Set");
 
         }
     }
@@ -192,7 +188,6 @@ public class activity_instruction_set extends AppCompatActivity {
         super.onResume();
         this.loadInstructionSets();
         this.setSpinner();
-        Toast.makeText(this, "testt3estest", Toast.LENGTH_SHORT).show();
     }
 
 }
